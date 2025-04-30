@@ -1,190 +1,154 @@
-import numpy as np
-import pandas as pd
-import matplotlib
-matplotlib.use('TkAgg')
-import matplotlib.pyplot as plt
-from sklearn.decomposition import PCA
-from sklearn.cluster import KMeans
-from sklearn import metrics, datasets
-from sklearn.model_selection import train_test_split
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.metrics import classification_report
-from sklearn.metrics import confusion_matrix
-from sklearn.cluster import AgglomerativeClustering
-from sklearn.cluster import DBSCAN
-import scipy.cluster.hierarchy as shc
-from sklearn.metrics import silhouette_score
-from sklearn.metrics import davies_bouldin_score
-from sklearn.metrics import calinski_harabasz_score
-from sklearn.neighbors import NearestNeighbors
+import utils as f
 
-def pokazWykresLokcia(results, n):
-    fig = plt.figure(figsize=(10, 7))
-    plt.plot(range(1, n), results, marker='o')
-    plt.title("Optymalizacja skupień metodą łokcia")
-    plt.xlabel('Liczba skupień')
-    plt.ylabel('Miara niespójności')
-    plt.tight_layout()
-    plt.show()
+#Zrób do tabeli zestawienie wyników wszystkich miar jakości dla wszystkich grupowań
+#Dopisz o doborze eps i min_samples do teorii, ale nie masz źródła
+#Główny algorytm tylko jako pseudokod, a resztę jako algorytmy???
 
-def miaraSilhouette(features, clusters):
-    silhouette = silhouette_score(features, clusters)
-    return silhouette
+#########################################
 
-def pokazWykresSilhouette(results, n):
-    fig = plt.figure(figsize=(10, 7))
-    plt.plot(range(2, n), results, marker='o')
-    plt.title("Wykres jakości grupowania metodą Silhouette")
-    plt.xlabel('Liczba skupień')
-    plt.ylabel('Wartosć')
-    plt.tight_layout()
-    plt.show()
+# -- Grupowanie K-means ---
+def grupowanie1_Kmeans(features, nazwa_tabeli, attributes_info):
 
-def miaraDBI(features, clusters):
-    dbi = davies_bouldin_score(features, clusters)
-    return dbi
+    clusters_Kmeans = []
+    centroids_Kmeans = []
+    inertia_Kmeans = []
 
-def pokazWykresDBI(results, n):
-    fig = plt.figure(figsize=(10, 7))
-    plt.plot(range(2, n), results, marker='o')
-    plt.title("Wykres jakości grupowania metodą Davies - Bouldin")
-    plt.xlabel('Liczba skupień')
-    plt.ylabel('Wartosć')
-    plt.tight_layout()
-    plt.show()
+    #Tablice używane do wykresów
+    silhouettes_Kmeans = []
+    dbi_Kmeans = []
+    calinski_harabasz_Kmeans = []
 
-def miaraCalinskiHarabasz(features, clusters):
-    ch_score = calinski_harabasz_score(features, clusters)
-    return ch_score
+    #Słowniki używane do właściwej ilości grup
+    best_silhouette_Kmeans = {0: -1}
+    best_dbi_Kmeans = {0: -1}
+    best_ch_Kmeans = {0: -1}
+    best_indexes_Kmeans = []
 
-def pokazWykresCalinskiHarabasz(results, n):
-    fig = plt.figure(figsize=(10, 7))
-    plt.plot(range(2, n), results, marker='o')
-    plt.title("Wykres jakości grupowania metodą Calinski-Harabasz")
-    plt.xlabel('Liczba skupień')
-    plt.ylabel('Wartosć')
-    plt.tight_layout()
-    plt.show()
+    for i in range(2,10):
+        clusters, centroids, inertia = f.grupowanieKmeans(i, features)
+        clusters_Kmeans.append(clusters)
+        centroids_Kmeans.append(centroids)
+        inertia_Kmeans.append(inertia)
+        if(i > 1):
 
-def wizualizacjaPCA(features, clusters, centroids, nazwa_grupowania):
-    # Redukcja wymiarów za pomocą PCA - dane są sprowadzane do 2 wymiarów
-    pca = PCA(n_components=2)
-    features_pca = pca.fit_transform(features)
-    centroids_pca = pca.transform(centroids)
+            #Wyszukiwanie najlepszej wartości miary Silhouette
+            current_silhouette = f.miaraSilhouette(features, clusters)
+            best_silhouette = list(best_silhouette_Kmeans.values())[0]
+            if current_silhouette >= best_silhouette:
+                best_silhouette_Kmeans.clear()
+                best_silhouette_Kmeans[i] = current_silhouette
 
-    plt.figure(figsize=(12, 8))
-    plt.title('Wizualizacja danych dla grupowania: ' + nazwa_grupowania)
-    plt.scatter(features_pca[:, 0], features_pca[:, 1], c=clusters, cmap='rainbow', s=10, alpha=0.7)
-    plt.scatter(centroids_pca[:, 0], centroids_pca[:, 1], s=100, color='blue', marker='x')
-    plt.xlabel('Składowa główna 1')
-    plt.ylabel('Składowa główna 2')
-    plt.show()
+            #Wyszukiwanie najlepszej wartości miary DBI
+            current_dbi = f.miaraDBI(features, clusters)
+            best_dbi = list(best_dbi_Kmeans.values())[0]
+            if current_silhouette >= best_dbi:
+                best_dbi_Kmeans.clear()
+                best_dbi_Kmeans[i] = current_dbi
 
-def grupowanieKmeans(k, features):
-    # Utworzenie obiektu do grupowania
-    kmeans = KMeans(n_clusters=k, init='k-means++', n_init=10, max_iter=300, random_state=0)
-    kmeans.fit(features)
-    clusters = kmeans.fit_predict(features)
-    inertia = kmeans.inertia_ #Miara jakości
-    centroids = kmeans.cluster_centers_ #Centroidy
-    return clusters, centroids, inertia
+            # Wyszukiwanie najlepszej wartości miary DBI
+            current_ch = f.miaraCalinskiHarabasz(features, clusters)
+            best_ch = list(best_ch_Kmeans.values())[0]
+            if current_ch >= best_ch:
+                best_ch_Kmeans.clear()
+                best_ch_Kmeans[i] = current_ch
 
-def narysujDendrogram(features):
-    plt.figure(figsize=(12, 8))
-    plt.title("Dendrogram")
-    shc.dendrogram(shc.linkage(features, method='ward'))
-    plt.show()
+            silhouettes_Kmeans.append(current_silhouette)
+            dbi_Kmeans.append(current_dbi)
+            calinski_harabasz_Kmeans.append(current_ch)
 
-def grupowanieHierarchiczne(k, features, linkage, metric):
-    ac = AgglomerativeClustering(n_clusters=k, metric=metric, linkage=linkage)
-    clusters = ac.fit_predict(features)
-    return clusters
+    # Wykresy miar jakości grupowania
+    f.pokazWykresLokcia(inertia_Kmeans, 10)
+    f.pokazWykresSilhouette(silhouettes_Kmeans, 10)
+    f.pokazWykresDBI(dbi_Kmeans, 10)
+    f.pokazWykresCalinskiHarabasz(calinski_harabasz_Kmeans, 10)
 
-def wykresNajblizszychOdleglosci(features, min_samples):
-    neigh = NearestNeighbors(n_neighbors=min_samples)
-    neigh.fit(features)
-    dists, _ = neigh.kneighbors(features)
-    odleglosci = np.sort(dists[:, -1])  # bierzemy ostatnią kolumnę (najdalszy z k)
-    plt.plot(odleglosci)
-    plt.xlabel("Punkty")
-    plt.ylabel(f"{min_samples}-najbliższa odległość")
-    plt.title("Wykres k-odległości")
-    plt.grid(True)
-    plt.show()
+    best_indexes_Kmeans = [list(best_silhouette_Kmeans.keys())[0], list(best_dbi_Kmeans.keys())[0], list(best_ch_Kmeans.keys())[0]]
+    print(f"Na ile grup powinny być podzielone dane w grupowaniu K-means wg miar jakości grupowania: {best_indexes_Kmeans}")
 
-def grupowanieDBSCAN(features, eps=0.5, min_samples=5):
-    model = DBSCAN(eps=eps, min_samples=min_samples)
-    clusters = model.fit_predict(features)
-    return clusters
+    #Dla każdej liczby grup, która jest najlepsza wg miar jakości wykonywane jest przypisanie grup do danych, a potem stworzenie reguł decyzyjnych i eksport do RSES
+    for i in dict.fromkeys(best_indexes_Kmeans):
+        clustersG = clusters_Kmeans[i]
+        grupyKmeans = f.przypisanieGrup(features, clustersG)
+        reguly = f.regulyDecyzyjne(grupyKmeans)
+        f.eksportDoRSES(attributes_info, reguly, nazwa_tabeli, f"Kmeans_{nazwa_tabeli}_grupy{i}.tab")
 
-def przypisanieGrup(dane, clusters):
-    new_column = pd.Series(clusters, name='group')
-    dane = pd.concat([dane, new_column], axis=1)
-    wiersze = []
+#################################################
 
-    for i in range(0, len(dane) - 1):
-        for j in range(0, len(dane) - 1):
-            if i != j:
-                index_i = pd.Series(dane.index[i], index=['index_i'])
-                features_i = dane.iloc[i, 0:10].reset_index(drop=True)
-                features_i.index = [f'feature_{k}_i' for k in range(0, len(features_i))]
-                group_i = pd.Series(dane.iloc[i, 13], index=['group_i'])
-                index_j = pd.Series(dane.index[j], index=['index_j'])
-                features_j = dane.iloc[j, 0:10].reset_index(drop=True)
-                features_j.index = [f'feature_{k}_j' for k in range(0, len(features_j))]
-                group_j = pd.Series(dane.iloc[j, 13], index=['group_j'])
-                wiersz = pd.concat([features_i, features_j, index_i, group_i, index_j, group_j], axis=0)
-                wiersze.append(wiersz)
+# --- Grupowanie hierarchiczne ---
 
-    zestawienie = pd.DataFrame(wiersze)
-    return zestawienie
+def grupowanie2_hierarchiczne(features, nazwa_tabeli, attributes_info):
 
-def regulyDecyzyjne(zestawienie):
-    rows = []
+    clusters_hierarchiczne = []
 
-    for i in range(0, len(zestawienie)):
-        row = zestawienie.iloc[i]
-        if int(row['group_i']) != int(row['group_j']):  # wykluczenie wierszy, w których nie ma zmiany grupy
-            wiersz = {
-                'feature_0': f"\"{row['feature_0_i']}-{row['feature_0_j']}\"",
-                'feature_1': f"\"{row['feature_1_i']}-{row['feature_1_j']}\"",
-                'feature_2': f"\"{row['feature_2_i']}-{row['feature_2_j']}\"",
-                'feature_3': f"\"{row['feature_3_i']}-{row['feature_3_j']}\"",
-                'feature_4': f"\"{row['feature_4_i']}-{row['feature_4_j']}\"",
-                'feature_5': f"\"{row['feature_5_i']}-{row['feature_5_j']}\"",
-                'feature_6': f"\"{row['feature_6_i']}-{row['feature_6_j']}\"",
-                'feature_7': f"\"{row['feature_7_i']}-{row['feature_7_j']}\"",
-                'feature_8': f"\"{row['feature_8_i']}-{row['feature_8_j']}\"",
-                'feature_9': f"\"{row['feature_9_i']}-{row['feature_9_j']}\"",
-                'group': f"\"{row['group_i']}-{row['group_j']}\""
-            }
-            rows.append(wiersz)
+    # Tablice używane do wykresów
+    silhouettes_hierarchiczne = []
+    dbi_hierarchiczne = []
+    calinski_harabasz_hierarchiczne = []
 
-    reguly = pd.DataFrame(rows)
-    return reguly
+    # Słowniki używane do właściwej ilości grup
+    best_silhouette_hierarchiczne = {0: -1}
+    best_dbi_hierarchiczne = {0: -1}
+    best_ch_hierarchiczne = {0: -1}
+    best_indexes_hierarchiczne = []
 
-def eksportDoRSES(attributes_info, df, table_name, filename):
-    """
-       Eksportuje DataFrame do pliku w formacie tabelarycznym (tab).
+    for i in range(2,10):
+        clusters = f.grupowanieHierarchiczne(i, features, "complete", "euclidean")
+        clusters_hierarchiczne.append(clusters)
 
-       :param df: Pandas DataFrame z danymi.
-       :param attributes_info: Lista krotek (nazwa_atrybutu, typ, [precision]).
-       :param table_name: Nazwa tabeli.
-       :param filename: Nazwa pliku wyjściowego.
-       """
-    with open(filename, 'w') as f:
-        # Nagłówek
-        f.write(f'TABLE "{table_name}"\n')
-        f.write(f'ATTRIBUTES {len(attributes_info)}\n')
-        for attr in attributes_info:
-            line = f' {attr[0]} {attr[1]}'
-            if len(attr) > 2:  # Jeśli podano precyzję
-                line += f' {attr[2]}'
-            f.write(line + '\n')
-        f.write(f'OBJECTS {len(df)}\n')
+        # Wyszukiwanie najlepszej wartości miary Silhouette
+        current_silhouette = f.miaraSilhouette(features, clusters)
+        best_silhouette = list(best_silhouette_hierarchiczne.values())[0]
+        if current_silhouette >= best_silhouette:
+            best_silhouette_hierarchiczne.clear()
+            best_silhouette_hierarchiczne[i] = current_silhouette
 
-        # Dane obiektów
-        for _, row in df.iterrows():
-            f.write(" ".join(map(str, row.values)) + '\n')
+        # Wyszukiwanie najlepszej wartości miary DBI
+        current_dbi = f.miaraDBI(features, clusters)
+        best_dbi = list(best_dbi_hierarchiczne.values())[0]
+        if current_silhouette >= best_dbi:
+            best_dbi_hierarchiczne.clear()
+            best_dbi_hierarchiczne[i] = current_dbi
 
-    print(f"Eksport zakończony. Plik został zapisany jako {filename}.")
+        # Wyszukiwanie najlepszej wartości miary DBI
+        current_ch = f.miaraCalinskiHarabasz(features, clusters)
+        best_ch = list(best_ch_hierarchiczne.values())[0]
+        if current_ch >= best_ch:
+            best_ch_hierarchiczne.clear()
+            best_ch_hierarchiczne[i] = current_ch
+
+        silhouettes_hierarchiczne.append(current_silhouette)
+        dbi_hierarchiczne.append(current_dbi)
+        calinski_harabasz_hierarchiczne.append(current_ch)
+
+    #Wykresy miar jakości grupowania
+    f.pokazWykresSilhouette(silhouettes_hierarchiczne, 10)
+    f.pokazWykresDBI(dbi_hierarchiczne, 10)
+    f.pokazWykresCalinskiHarabasz(calinski_harabasz_hierarchiczne, 10)
+
+    best_indexes_hierarchiczne = [list(best_silhouette_hierarchiczne.keys())[0], list(best_dbi_hierarchiczne.keys())[0], list(best_ch_hierarchiczne.keys())[0]]
+    print(f"Na ile grup powinny być podzielone dane w grupowaniu hierarchicznym wg miar jakości grupowania: {best_indexes_hierarchiczne}")
+
+    # Dla każdej liczby grup, która jest najlepsza wg miar jakości wykonywane jest przypisanie grup do danych, a potem stworzenie reguł decyzyjnych i eksport do RSES
+    for i in dict.fromkeys(best_indexes_hierarchiczne):
+        clustersG = clusters_hierarchiczne[i]
+        grupyHierarchiczne = f.przypisanieGrup(features, clustersG)
+        reguly = f.regulyDecyzyjne(grupyHierarchiczne)
+        f.eksportDoRSES(attributes_info, reguly, nazwa_tabeli, f"hierarchiczne_{nazwa_tabeli}_grupy{i}.tab")
+
+#################################################
+
+# --- Grupowanie DBSCAN ---
+
+def grupowanie3_DBSCAN(features, nazwa_tabeli, attributes_info):
+    min_samples = features.shape[1] * 2
+    f.wykresNajblizszychOdleglosci(features, min_samples)
+    eps = 5.0
+    clustersDBSCAN = f.grupowanieDBSCAN(features, eps, min_samples)
+    grupyDBSCAN = f.przypisanieGrup(features, clustersDBSCAN)
+    reguly = f.regulyDecyzyjne(grupyDBSCAN)
+    f.eksportDoRSES(attributes_info, reguly, nazwa_tabeli, f"DBSCAN_{nazwa_tabeli}.tab")
+
+##################################################
+
+
+
