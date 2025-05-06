@@ -18,7 +18,6 @@ def grupowanie1_Kmeans(features, nazwa_tabeli, attributes_info):
     best_silhouette_Kmeans = {0: -1}
     best_dbi_Kmeans = {0: -1}
     best_ch_Kmeans = {0: -1}
-    best_indexes_Kmeans = []
 
     for i in range(2,10):
         clusters, centroids, inertia = f.grupowanieKmeans(i, features)
@@ -85,7 +84,6 @@ def grupowanie2_hierarchiczne(features, nazwa_tabeli, attributes_info):
     best_silhouette_hierarchiczne = {0: -1}
     best_dbi_hierarchiczne = {0: -1}
     best_ch_hierarchiczne = {0: -1}
-    best_indexes_hierarchiczne = []
 
     for i in range(2,10):
         clusters = f.grupowanieHierarchiczne(i, features, "complete", "euclidean")

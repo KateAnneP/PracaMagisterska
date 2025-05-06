@@ -33,10 +33,11 @@ def main():
     features = dane.iloc[:, 0:10]  # cechy do grupowania, bez innych kolumn w tabeli
 
     #################################################
-
-    #f.grupowanie1_Kmeans(features, nazwa_tabeli, attributes_info)
-    f.grupowanie2_hierarchiczne(features, nazwa_tabeli, attributes_info)
-    #f.grupowanie3_DBSCAN(features, nazwa_tabeli, attributes_info)
+    # Nr grupowania: 1-Kmeans, 2-hierarchiczne, 3-DBSCAN
+    grupy_Kmeans = f.grupowanie(features, nazwa_tabeli, attributes_info, 1)
+    #grupy_hierarchiczne = f.grupowanie(features, nazwa_tabeli, attributes_info, 2)
+    #grupyDBSCAN = f.grupowanie(features, nazwa_tabeli, attributes_info, 3)
+    #f.drzewoDecyzyjne(grupy_Kmeans)
 
 if __name__ == "__main__":
     main()

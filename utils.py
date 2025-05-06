@@ -20,7 +20,7 @@ from sklearn.neighbors import NearestNeighbors
 
 def pokazWykresLokcia(results, n):
     fig = plt.figure(figsize=(10, 7))
-    plt.plot(range(1, n), results, marker='o')
+    plt.plot(range(2, n), results, marker='o')
     plt.title("Optymalizacja skupień metodą łokcia")
     plt.xlabel('Liczba skupień')
     plt.ylabel('Miara niespójności')
@@ -117,7 +117,25 @@ def grupowanieDBSCAN(features, eps=0.5, min_samples=5):
     clusters = model.fit_predict(features)
     return clusters
 
+def wykresPCA(features, clusters, nazwa, centroids=None):
+    # Redukcja wymiarów za pomocą PCA - dane są sprowadzane do 2 wymiarów
+    pca = PCA(n_components=2)
+    features_pca = pca.fit_transform(features)
+    if centroids is not None:
+        centroids_pca = pca.transform(centroids)
+
+    plt.figure(figsize=(12, 8))
+    plt.title(f'Wizualizacja - grupowanie {nazwa}')
+    plt.scatter(features_pca[:, 0], features_pca[:, 1], c=clusters, cmap='tab10', s=10, alpha=0.7)
+    if centroids is not None:
+        plt.scatter(centroids_pca[:, 0], centroids_pca[:, 1], s=100, color='blue', marker='x')
+    plt.xlabel('Składowa główna 1')
+    plt.ylabel('Składowa główna 2')
+    plt.show()
+
 def przypisanieGrup(dane, clusters):
+    noColumn = dane.shape[1]
+    print(noColumn) #Sprawdź to
     new_column = pd.Series(clusters, name='group')
     dane = pd.concat([dane, new_column], axis=1)
     wiersze = []
@@ -128,13 +146,13 @@ def przypisanieGrup(dane, clusters):
         for j in range(0, len(dane) - 1):
             if i != j:
                 index_i = pd.Series(dane.index[i], index=['index_i'])
-                features_i = dane.iloc[i, 0:10].reset_index(drop=True)
+                features_i = dane.iloc[i, 0:noColumn].reset_index(drop=True)
                 features_i.index = [f'feature_{k}_i' for k in range(0, len(features_i))]
-                group_i = pd.Series(dane.iloc[i, 10], index=['group_i'])
+                group_i = pd.Series(dane.iloc[i, noColumn], index=['group_i'])
                 index_j = pd.Series(dane.index[j], index=['index_j'])
-                features_j = dane.iloc[j, 0:10].reset_index(drop=True)
+                features_j = dane.iloc[j, 0:noColumn].reset_index(drop=True)
                 features_j.index = [f'feature_{k}_j' for k in range(0, len(features_j))]
-                group_j = pd.Series(dane.iloc[j, 10], index=['group_j'])
+                group_j = pd.Series(dane.iloc[j, noColumn], index=['group_j'])
                 wiersz = pd.concat([features_i, features_j, index_i, group_i, index_j, group_j], axis=0)
                 wiersze.append(wiersz)
 
