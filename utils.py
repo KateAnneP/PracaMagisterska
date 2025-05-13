@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import matplotlib
+from matplotlib.lines import Line2D
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 from sklearn.decomposition import PCA
@@ -66,20 +67,6 @@ def pokazWykresCalinskiHarabasz(results, n):
     plt.tight_layout()
     plt.show()
 
-def wizualizacjaPCA(features, clusters, centroids, nazwa_grupowania):
-    # Redukcja wymiarów za pomocą PCA - dane są sprowadzane do 2 wymiarów
-    pca = PCA(n_components=2)
-    features_pca = pca.fit_transform(features)
-    centroids_pca = pca.transform(centroids)
-
-    plt.figure(figsize=(12, 8))
-    plt.title('Wizualizacja danych dla grupowania: ' + nazwa_grupowania)
-    plt.scatter(features_pca[:, 0], features_pca[:, 1], c=clusters, cmap='rainbow', s=10, alpha=0.7)
-    plt.scatter(centroids_pca[:, 0], centroids_pca[:, 1], s=100, color='blue', marker='x')
-    plt.xlabel('Składowa główna 1')
-    plt.ylabel('Składowa główna 2')
-    plt.show()
-
 def grupowanieKmeans(k, features):
     # Utworzenie obiektu do grupowania
     kmeans = KMeans(n_clusters=k, init='k-means++', n_init=10, max_iter=300, random_state=0)
@@ -89,10 +76,10 @@ def grupowanieKmeans(k, features):
     centroids = kmeans.cluster_centers_ #Centroidy
     return clusters, centroids, inertia
 
-def narysujDendrogram(features):
+def narysujDendrogram(features, method='ward'):
     plt.figure(figsize=(12, 8))
     plt.title("Dendrogram")
-    shc.dendrogram(shc.linkage(features, method='ward'))
+    shc.dendrogram(shc.linkage(features, method=method))
     plt.show()
 
 def grupowanieHierarchiczne(k, features, linkage, metric):
@@ -124,13 +111,25 @@ def wykresPCA(features, clusters, nazwa, centroids=None):
     if centroids is not None:
         centroids_pca = pca.transform(centroids)
 
-    plt.figure(figsize=(12, 8))
+    plt.figure(figsize=(10, 7))
     plt.title(f'Wizualizacja - grupowanie {nazwa}')
-    plt.scatter(features_pca[:, 0], features_pca[:, 1], c=clusters, cmap='tab10', s=10, alpha=0.7)
+    #plt.scatter(features_pca[:, 0], features_pca[:, 1], c=clusters, cmap='tab10', s=10, alpha=0.7)
     if centroids is not None:
         plt.scatter(centroids_pca[:, 0], centroids_pca[:, 1], s=100, color='blue', marker='x')
+
+    #Unikalne klastry i kolory
+    unique_clusters = np.unique(clusters)
+    colors = plt.cm.rainbow(np.linspace(0, 1, len(unique_clusters)))
+    color_map = dict(zip(unique_clusters, colors))
+
+    #Punkty z kolorami zgodnymi z mapą
+    for cluster in unique_clusters:
+        idx = clusters == cluster
+        plt.scatter(features_pca[idx, 0], features_pca[idx, 1], color=color_map[cluster], s=10, alpha=0.7, label=f'Klaster {cluster}')
+
     plt.xlabel('Składowa główna 1')
     plt.ylabel('Składowa główna 2')
+    plt.legend()
     plt.show()
 
 def przypisanieGrup(dane, clusters):
@@ -159,27 +158,51 @@ def przypisanieGrup(dane, clusters):
     zestawienie = pd.DataFrame(wiersze)
     return zestawienie
 
-def regulyDecyzyjne(zestawienie):
+def regulyDecyzyjne(zestawienie, nazwa_tabeli):
     rows = []
 
+    # if(nazwa_tabeli == "anxiety" or nazwa_tabeli=="depression"):
+    #     for i in range(0, len(zestawienie)):
+    #         row = zestawienie.iloc[i]
+    #         if int(row['group_i']) != int(row['group_j']):  # wykluczenie wierszy, w których nie ma zmiany grupy
+    #             wiersz = {
+    #                 'feature_0': f"\"{row['feature_0_i']}-{row['feature_0_j']}\"",
+    #                 'feature_1': f"\"{row['feature_1_i']}-{row['feature_1_j']}\"",
+    #                 'feature_2': f"\"{row['feature_2_i']}-{row['feature_2_j']}\"",
+    #                 'feature_3': f"\"{row['feature_3_i']}-{row['feature_3_j']}\"",
+    #                 'feature_4': f"\"{row['feature_4_i']}-{row['feature_4_j']}\"",
+    #                 'feature_5': f"\"{row['feature_5_i']}-{row['feature_5_j']}\"",
+    #                 'feature_6': f"\"{row['feature_6_i']}-{row['feature_6_j']}\"",
+    #                 'feature_7': f"\"{row['feature_7_i']}-{row['feature_7_j']}\"",
+    #                 'feature_8': f"\"{row['feature_8_i']}-{row['feature_8_j']}\"",
+    #                 'feature_9': f"\"{row['feature_9_i']}-{row['feature_9_j']}\"",
+    #                 'group': f"\"{row['group_i']}-{row['group_j']}\""
+    #             }
+    #             rows.append(wiersz)
+    # elif(nazwa_tabeli == "anxiety_depression" or nazwa_tabeli == "anxiety_user" or nazwa_tabeli == "depression_user"):
+    noColumn = int(zestawienie.shape[1]/2)-2
+    print(noColumn)
     for i in range(0, len(zestawienie)):
         row = zestawienie.iloc[i]
-        if int(row['group_i']) != int(row['group_j']):  # wykluczenie wierszy, w których nie ma zmiany grupy
+        if int(row['group_i']) != int(row['group_j']):
             wiersz = {
-                'feature_0': f"\"{row['feature_0_i']}-{row['feature_0_j']}\"",
-                'feature_1': f"\"{row['feature_1_i']}-{row['feature_1_j']}\"",
-                'feature_2': f"\"{row['feature_2_i']}-{row['feature_2_j']}\"",
-                'feature_3': f"\"{row['feature_3_i']}-{row['feature_3_j']}\"",
-                'feature_4': f"\"{row['feature_4_i']}-{row['feature_4_j']}\"",
-                'feature_5': f"\"{row['feature_5_i']}-{row['feature_5_j']}\"",
-                'feature_6': f"\"{row['feature_6_i']}-{row['feature_6_j']}\"",
-                'feature_7': f"\"{row['feature_7_i']}-{row['feature_7_j']}\"",
-                'feature_8': f"\"{row['feature_8_i']}-{row['feature_8_j']}\"",
-                'feature_9': f"\"{row['feature_9_i']}-{row['feature_9_j']}\"",
-                'group': f"\"{row['group_i']}-{row['group_j']}\""
+                f"feature_{i}": f"\"{row[f'feature_{i}_i']}-{row[f'feature_{i}_j']}\""
+                for i in range(noColumn)
             }
+            wiersz['group'] = f"\"{row['group_i']}-{row['group_j']}\""
             rows.append(wiersz)
-
+    # elif(nazwa_tabeli == "anxiety_depression_user"):
+    #     for i in range(0, len(zestawienie)):
+    #         row = zestawienie.iloc[i]
+    #         if int(row['group_i']) != int(row['group_j']):
+    #             wiersz = {
+    #                 f"feature_{i}": f"\"{row[f'feature_{i}_i']}-{row[f'feature_{i}_j']}\""
+    #                 for i in range(32)
+    #             }
+    #             wiersz['group'] = f"\"{row['group_i']}-{row['group_j']}\""
+    #             rows.append(wiersz)
+    # elif(nazwa_tabeli == "anxiety_depression_pairs"):
+    #     pass
     reguly = pd.DataFrame(rows)
     return reguly
 

@@ -7,14 +7,13 @@ from sklearn.tree import DecisionTreeClassifier, plot_tree
 
 import utils as f
 
-#Zrób do tabeli zestawienie wyników wszystkich miar jakości dla wszystkich grupowań
 #... algorytm wybrał ilość grup taką i taką, a z powyższych danych wynika, że jakość tego grupowania jest taka i taka
 #Dopisz do eksportu do RSESa (w dodatkach)" że tam atrybuty trzeba, i że rozszerzenie itp.
-#Dodać kolejny algorytm, w którym są wyniki z testów dla obu małżonków.
 
 # Nie masz podkładki pod wzory na a i b w mierze Silhouette, dorób może rysunek do tego, jak wyglądają te grupy A i C
 # Metryki odległości - zrób eksperymenty, czy coś będzie lepsze od euklidesowej, jak coś to dopisz
 # Dodaj parę fotek do algorytmów grupowania
+# !!! Popraw algorytm, z tymi warunkami dot. miar jakości, że większe od 0
 
 #Pytania:
 # - czy do łokciowej może być od 2, bo brzydko wygląda wykres
@@ -24,6 +23,7 @@ import utils as f
 # #Ale jeśli jako pary, to czyją chorobę mamy na myśli. Chyba, że chodzi tylko o sam fakt jej istnienia
 # #Więc chyba można wziąć pod uwagę pojedyncze osoby, ale z uwzględnieniem wieku i edukacji ich partnera, żeby klasyfikować ich zdrowie psychiczne
 # # w zależności od ich relacji
+
 
 def grupowanie(features, nazwa_tabeli, attributes_info, nr_grupowania):
     #Nr grupowania: 1-Kmeans, 2-hierarchiczne, 3-DBSCAN
@@ -45,7 +45,7 @@ def grupowanie(features, nazwa_tabeli, attributes_info, nr_grupowania):
 
     #Słowniki używane do właściwej ilości grup
     best_silhouette = {0: -1}
-    best_dbi = {0: -1}
+    best_dbi = {0: 100}
     best_ch = {0: -1}
     best_indexes = []
 
@@ -55,7 +55,7 @@ def grupowanie(features, nazwa_tabeli, attributes_info, nr_grupowania):
 
     miary = {}
 
-    for i in range(2,10):
+    for i in range(2,4):
 
         if nr_grupowania == 1:
             clusters, centroids, inertia = f.grupowanieKmeans(i, features)
@@ -68,72 +68,83 @@ def grupowanie(features, nazwa_tabeli, attributes_info, nr_grupowania):
         elif nr_grupowania == 3:
             min_samples = features.shape[1] * 2
             f.wykresNajblizszychOdleglosci(features, min_samples)
-            eps = 5.0
+            eps = 70.0
             clustersDBSCAN = f.grupowanieDBSCAN(features, eps, min_samples)
             grupyDBSCAN = f.przypisanieGrup(features, clustersDBSCAN)
+            f.wykresPCA(features, clustersDBSCAN, nazwa_grupowania)
             reguly = f.regulyDecyzyjne(grupyDBSCAN)
-            f.eksportDoRSES(attributes_info, reguly, nazwa_tabeli, f"DBSCAN_{nazwa_tabeli}.tab")
+            #f.eksportDoRSES(attributes_info, reguly, nazwa_tabeli, f"DBSCAN_{nazwa_tabeli}.tab")
             return grupyDBSCAN
 
-        #Wyszukiwanie najlepszej wartości miary Silhouette
-        current_silhouette = f.miaraSilhouette(features, clusters)
-        best_silhouette_value = list(best_silhouette.values())[0]
-        if current_silhouette >= best_silhouette_value:
-            best_silhouette.clear()
-            best_silhouette[i] = current_silhouette
-
-        #Wyszukiwanie najlepszej wartości miary DBI
-        current_dbi = f.miaraDBI(features, clusters)
-        best_dbi_value = list(best_dbi.values())[0]
-        if current_silhouette >= best_dbi_value:
-            best_dbi.clear()
-            best_dbi[i] = current_dbi
-
-        # Wyszukiwanie najlepszej wartości miary DBI
-        current_ch = f.miaraCalinskiHarabasz(features, clusters)
-        best_ch_value = list(best_ch.values())[0]
-        if current_ch >= best_ch_value:
-            best_ch.clear()
-            best_ch[i] = current_ch
-
-        silhouettes.append(current_silhouette)
-        dbi.append(current_dbi)
-        calinski_harabasz.append(current_ch)
+        # #Wyszukiwanie najlepszej wartości miary Silhouette
+        # current_silhouette = f.miaraSilhouette(features, clusters)
+        # best_silhouette_value = list(best_silhouette.values())[0]
+        # if current_silhouette >= best_silhouette_value and current_silhouette >= 0:
+        #     best_silhouette.clear()
+        #     best_silhouette[i] = current_silhouette
+        #
+        # #Wyszukiwanie najlepszej wartości miary DBI
+        # current_dbi = f.miaraDBI(features, clusters)
+        # best_dbi_value = list(best_dbi.values())[0]
+        # if current_dbi <= best_dbi_value:
+        #     best_dbi.clear()
+        #     best_dbi[i] = current_dbi
+        #
+        # # Wyszukiwanie najlepszej wartości miary DBI
+        # current_ch = f.miaraCalinskiHarabasz(features, clusters)
+        # best_ch_value = list(best_ch.values())[0]
+        # if current_ch >= best_ch_value:
+        #     best_ch.clear()
+        #     best_ch[i] = current_ch
+        #
+        # silhouettes.append(current_silhouette)
+        # dbi.append(current_dbi)
+        # calinski_harabasz.append(current_ch)
 
     # Wykresy miar jakości grupowania
-    if nr_grupowania == 1:
-        f.pokazWykresLokcia(inertia_Kmeans, 10)
-        f.wykresPCA(features, clusters, nazwa_grupowania, centroids)
-    else:
-        f.wykresPCA(features, clusters, nazwa_grupowania)
+    # if nr_grupowania == 1:
+    #     f.pokazWykresLokcia(inertia_Kmeans, 10)
     # f.pokazWykresSilhouette(silhouettes, 10)
     # f.pokazWykresDBI(dbi, 10)
     # f.pokazWykresCalinskiHarabasz(calinski_harabasz, 10)
 
-    miary['silhouette'] = silhouettes
-    miary['dbi'] = dbi
-    miary['calinski_harabasz'] = calinski_harabasz
-    import pandas as pd
-    df = pd.DataFrame({
-        'Liczba klastrów': range(2, 2 + len(miary['silhouette'])),
-        'Silhouette': miary['silhouette'],
-        'DBI': miary['dbi'],
-        'Calinski-Harabasz': miary['calinski_harabasz']
-    })
+    # miary['silhouette'] = silhouettes
+    # miary['dbi'] = dbi
+    # miary['calinski_harabasz'] = calinski_harabasz
+    # import pandas as pd
+    # df = pd.DataFrame({
+    #     'Liczba klastrów': range(2, 2 + len(miary['silhouette'])),
+    #     'Silhouette': miary['silhouette'],
+    #     'DBI': miary['dbi'],
+    #     'Calinski-Harabasz': miary['calinski_harabasz']
+    # })
+    # print(df.to_string(index=False))
 
-    print(df.to_string(index=False))
+    # f.wykresPCA(features, allClusters[0], nazwa_grupowania)
+    # f.wykresPCA(features, allClusters[1], nazwa_grupowania)
 
-    best_indexes = [list(best_silhouette.keys())[0], list(best_dbi.keys())[0], list(best_ch.keys())[0]]
-    print(f"Na ile grup powinny być podzielone dane w grupowaniu {nazwa_grupowania} wg miar jakości grupowania: {best_indexes}")
+    # best_indexes = [list(best_silhouette.keys())[0], list(best_dbi.keys())[0], list(best_ch.keys())[0]]
+    # print(f"Na ile grup powinny być podzielone dane w grupowaniu {nazwa_grupowania} wg miar jakości grupowania: {best_indexes}")
 
     #Dla każdej liczby grup, która jest najlepsza wg miar jakości wykonywane jest przypisanie grup do danych, a potem stworzenie reguł decyzyjnych i eksport do RSES
-    # for i in dict.fromkeys(best_indexes):
-    #     clustersG = allClusters[i]
-    #     grupy = f.przypisanieGrup(features, clustersG)
-    #     reguly = f.regulyDecyzyjne(grupy)
-    #     reguly.to_csv(f'{nazwa_grupowania}_{nazwa_tabeli}_grupy{i}.csv', index=False)
-    #     f.eksportDoRSES(attributes_info, reguly, nazwa_tabeli, f"{nazwa_grupowania}_{nazwa_tabeli}_grupy{i}.tab")
-    #
+    #for i in dict.fromkeys(best_indexes):
+    for i in range(0, 2):
+        #f.wykresPCA(features, allClusters[i-2], nazwa_grupowania)
+        clustersG = allClusters[i]
+        grupy = f.przypisanieGrup(features, clustersG)
+        polowa = int(len(grupy) / 2)
+        print(f"Cały zbiór danych: {len(grupy)}")
+        print(f"Połowa: {polowa}")
+
+        mniejsza_proba_grupy = grupy.sample(n=polowa, random_state=42, replace=False)
+        reguly = f.regulyDecyzyjne(grupy, nazwa_tabeli)
+        reguly_mniejsza_proba = f.regulyDecyzyjne(mniejsza_proba_grupy, nazwa_tabeli)
+
+        #reguly.to_csv(f"wyniki/{nazwa_grupowania}_{nazwa_tabeli}_grupy{i+2}.csv", index=False) #zmienione na i + 2
+        f.eksportDoRSES(attributes_info, reguly, nazwa_tabeli, f"wyniki/{nazwa_grupowania}_{nazwa_tabeli}_grupy{i+2}.tab")
+        #reguly_mniejsza_proba.to_csv(f"wyniki/{nazwa_grupowania}_{nazwa_tabeli}_grupy{i + 2}_probka.csv", index=False)  # zmienione na i + 2
+        f.eksportDoRSES(attributes_info, reguly_mniejsza_proba, nazwa_tabeli, f"wyniki/{nazwa_grupowania}_{nazwa_tabeli}_grupy{i + 2}_probka.tab")
+
     return #grupy
 
 #########################################

@@ -6,16 +6,16 @@ def main():
     dane = pd.read_csv('dane/adepression.csv', delimiter=';')
     nazwa_tabeli = "depression"
     attributes_info = [
-        ("f_0", "symbolic"),
-        ("f_1", "symbolic"),
-        ("f_2", "symbolic"),
-        ("f_3", "symbolic"),
-        ("f_4", "symbolic"),
-        ("f_5", "symbolic"),
-        ("f_6", "symbolic"),
-        ("f_7", "symbolic"),
-        ("f_8", "symbolic"),
-        ("f_9", "symbolic"),
+        ("f_0_d", "symbolic"),
+        ("f_1_d", "symbolic"),
+        ("f_2_d", "symbolic"),
+        ("f_3_d", "symbolic"),
+        ("f_4_d", "symbolic"),
+        ("f_5_d", "symbolic"),
+        ("f_6_d", "symbolic"),
+        ("f_7_d", "symbolic"),
+        ("f_8_d", "symbolic"),
+        ("f_9_d", "symbolic"),
         ("group", "symbolic"),
     ]
 

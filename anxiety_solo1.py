@@ -6,16 +6,16 @@ def main():
     dane = pd.read_csv('dane/aanxiety.csv', delimiter=';')
     nazwa_tabeli = "anxiety"
     attributes_info = [
-        ("f_0", "symbolic"),
-        ("f_1", "symbolic"),
-        ("f_2", "symbolic"),
-        ("f_3", "symbolic"),
-        ("f_4", "symbolic"),
-        ("f_5", "symbolic"),
-        ("f_6", "symbolic"),
-        ("f_7", "symbolic"),
-        ("f_8", "symbolic"),
-        ("f_9", "symbolic"),
+        ("f_0_a", "symbolic"),
+        ("f_1_a", "symbolic"),
+        ("f_2_a", "symbolic"),
+        ("f_3_a", "symbolic"),
+        ("f_4_a", "symbolic"),
+        ("f_5_a", "symbolic"),
+        ("f_6_a", "symbolic"),
+        ("f_7_a", "symbolic"),
+        ("f_8_a", "symbolic"),
+        ("f_9_a", "symbolic"),
         ("group", "symbolic"),
     ]
 
@@ -34,8 +34,8 @@ def main():
 
     #################################################
     # Nr grupowania: 1-Kmeans, 2-hierarchiczne, 3-DBSCAN
-    grupy_Kmeans = f.grupowanie(features, nazwa_tabeli, attributes_info, 1)
-    #grupy_hierarchiczne = f.grupowanie(features, nazwa_tabeli, attributes_info, 2)
+    #grupy_Kmeans = f.grupowanie(features, nazwa_tabeli, attributes_info, 1)
+    grupy_hierarchiczne = f.grupowanie(features, nazwa_tabeli, attributes_info, 2)
     #grupyDBSCAN = f.grupowanie(features, nazwa_tabeli, attributes_info, 3)
     #f.drzewoDecyzyjne(grupy_Kmeans)
 

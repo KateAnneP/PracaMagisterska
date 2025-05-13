@@ -5,6 +5,7 @@ def main():
     # Dane
     dane = pd.read_csv('dane/aanxiety.csv', delimiter=';')
     dane2 = pd.read_csv('dane/adepression.csv', delimiter=';')
+
     nazwa_tabeli = "anxiety_depression"
     attributes_info = [
         ("f_0_a", "symbolic"),
@@ -35,24 +36,19 @@ def main():
     dane = dane.reset_index(drop=True)
 
     do_usuniecia2 = [34, 68]
-    dane2 = dane.drop(dane.index[do_usuniecia])
-    dane2 = dane.reset_index(drop=True)
+    dane2 = dane2.drop(dane2.index[do_usuniecia2])
+    dane2 = dane2.reset_index(drop=True)
 
     # Przygotowanie atrybutów:
     dane_split = dane['attributes'].str.split('|', expand=True)
-    dane_split.columns = [f'f_{i}' for i in range(dane_split.shape[1])]
-    dane = pd.concat([dane_split, dane['date'], dane['email'], dane['gender']], axis=1)
-    features = dane.iloc[:, 0:10]  # cechy do grupowania, bez innych kolumn w tabeli
+    dane_split.columns = [f'f_{i}_a' for i in range(dane_split.shape[1])]
+    dane = pd.concat([dane_split, dane['email']], axis=1)
 
     dane2_split = dane2['attributes'].str.split('|', expand=True)
-    dane2_split.columns = [f'f_{i}' for i in range(dane2_split.shape[1])]
-    dane2 = pd.concat([dane2_split, dane2['date'], dane2['email'], dane2['gender']], axis=1)
-    features2 = dane2.iloc[:, 0:10]  # cechy do grupowania, bez innych kolumn w tabeli
+    dane2_split.columns = [f'f_{i}_d' for i in range(dane2_split.shape[1])]
+    dane2 = pd.concat([dane2_split, dane2['email']], axis=1)
 
-    featuresA = features.rename(columns=lambda x: f"{x}_a")  # Zmiana nazwy, żeby można było rozróżnić cechy
-    featuresD = features2.rename(columns=lambda x: f"{x}_d")
-
-    all_features = pd.concat([featuresA, featuresD], axis=1)
+    all_features = (pd.merge(dane, dane2, on='email', how='inner')).drop(columns=['email'])
     indexes = []
 
     #Resetowanie indeksów
@@ -65,9 +61,9 @@ def main():
 
     #################################################
     # Nr grupowania: 1-Kmeans, 2-hierarchiczne, 3-DBSCAN
-    grupy_Kmeans = f.grupowanie(features, nazwa_tabeli, attributes_info, 1)
-    grupy_hierarchiczne = f.grupowanie(features, nazwa_tabeli, attributes_info, 2)
-    #grupyDBSCAN = f.grupowanie(features, nazwa_tabeli, attributes_info, 3)
+    #grupy_Kmeans = f.grupowanie(all_features, nazwa_tabeli, attributes_info, 1)
+    grupy_hierarchiczne = f.grupowanie(all_features, nazwa_tabeli, attributes_info, 2)
+    #grupyDBSCAN = f.grupowanie(all_features, nazwa_tabeli, attributes_info, 3)
     #f.drzewoDecyzyjne(grupy_Kmeans)
 
 if __name__ == "__main__":
