@@ -32,7 +32,7 @@ def main():
         ("child_number", "symbolic"),
         ("education", "symbolic"),
         ("gender", "symbolic"),
-        ("partner_education", "symbolic"),
+        ("partner_education", "symbolic"), #23
         ("partner_age", "symbolic"),
         ("no_of_daughters", "symbolic"),
         ("no_of_sons", "symbolic"),
@@ -41,7 +41,7 @@ def main():
         ("age", "symbolic"),
         ("years_of_mariage", "symbolic"),
         ("years_of_relationship", "symbolic"),
-        ("f_0_a_partner", "symbolic"),
+        ("f_0_a_partner", "symbolic"), #32
         ("f_1_a_partner", "symbolic"),
         ("f_2_a_partner", "symbolic"),
         ("f_3_a_partner", "symbolic"),
@@ -49,7 +49,7 @@ def main():
         ("f_5_a_partner", "symbolic"),
         ("f_6_a_partner", "symbolic"),
         ("f_7_a_partner", "symbolic"),
-        ("f_8_a_partner", "symbolic"),
+        ("f_8_a_partner", "symbolic"), #40
         ("f_9_a_partner", "symbolic"),
         ("f_0_d_partner", "symbolic"),
         ("f_1_d_partner", "symbolic"),
@@ -57,7 +57,7 @@ def main():
         ("f_3_d_partner", "symbolic"),
         ("f_4_d_partner", "symbolic"),
         ("f_5_d_partner", "symbolic"),
-        ("f_6_d_partner", "symbolic"),
+        ("f_6_d_partner", "symbolic"), #48
         ("f_7_d_partner", "symbolic"),
         ("f_8_d_partner", "symbolic"),
         ("f_9_d_partner", "symbolic"),
@@ -108,11 +108,20 @@ def main():
     user_ad = user_ad.drop(user_ad.index[indexes])
     user_ad = user_ad.reset_index(drop=True)
 
+    print(max(user_ad['years_of_mariage']))
+    print(min(user_ad['years_of_mariage']))
+    print(max(user_ad['years_of_relationship']))
+    print(min(user_ad['years_of_relationship']))
+    print(max(user_ad['age_oldest_child']))
+    print(min(user_ad['age_oldest_child']))
+    print(max(user_ad['average_child_age']))
+    print(min(user_ad['average_child_age']))
 
     #################################################
     # Nr grupowania: 1-Kmeans, 2-hierarchiczne, 3-DBSCAN
-    #grupy_Kmeans = f.grupowanie(user_ad, nazwa_tabeli, attributes_info, 1)
-    grupy_hierarchiczne = f.grupowanie(user_ad, nazwa_tabeli, attributes_info, 2)
+    reguly_test, reguly_caly = f.grupowanie(user_ad, nazwa_tabeli, attributes_info, 1)  # clusters też wcześniej dawało
+    #f.stabilnosc(reguly_test, reguly_caly)
+    #grupy_hierarchiczne = f.grupowanie(user_ad, nazwa_tabeli, attributes_info, 2)
     #grupyDBSCAN = f.grupowanie(user_ad, nazwa_tabeli, attributes_info, 3)
     #f.drzewoDecyzyjne(grupy_Kmeans)
 

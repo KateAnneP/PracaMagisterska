@@ -1,16 +1,10 @@
 import numpy as np
 import pandas as pd
 import matplotlib
-from matplotlib.lines import Line2D
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 from sklearn.decomposition import PCA
 from sklearn.cluster import KMeans
-from sklearn import metrics, datasets
-from sklearn.model_selection import train_test_split
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.metrics import classification_report
-from sklearn.metrics import confusion_matrix
 from sklearn.cluster import AgglomerativeClustering
 from sklearn.cluster import DBSCAN
 import scipy.cluster.hierarchy as shc
@@ -133,6 +127,7 @@ def wykresPCA(features, clusters, nazwa, centroids=None):
     plt.show()
 
 def przypisanieGrup(dane, clusters):
+    dane = dane.reset_index(drop=True)
     noColumn = dane.shape[1]
     print(noColumn) #Sprawdź to
     new_column = pd.Series(clusters, name='group')
@@ -158,28 +153,8 @@ def przypisanieGrup(dane, clusters):
     zestawienie = pd.DataFrame(wiersze)
     return zestawienie
 
-def regulyDecyzyjne(zestawienie, nazwa_tabeli):
+def regulyDecyzyjne(zestawienie):
     rows = []
-
-    # if(nazwa_tabeli == "anxiety" or nazwa_tabeli=="depression"):
-    #     for i in range(0, len(zestawienie)):
-    #         row = zestawienie.iloc[i]
-    #         if int(row['group_i']) != int(row['group_j']):  # wykluczenie wierszy, w których nie ma zmiany grupy
-    #             wiersz = {
-    #                 'feature_0': f"\"{row['feature_0_i']}-{row['feature_0_j']}\"",
-    #                 'feature_1': f"\"{row['feature_1_i']}-{row['feature_1_j']}\"",
-    #                 'feature_2': f"\"{row['feature_2_i']}-{row['feature_2_j']}\"",
-    #                 'feature_3': f"\"{row['feature_3_i']}-{row['feature_3_j']}\"",
-    #                 'feature_4': f"\"{row['feature_4_i']}-{row['feature_4_j']}\"",
-    #                 'feature_5': f"\"{row['feature_5_i']}-{row['feature_5_j']}\"",
-    #                 'feature_6': f"\"{row['feature_6_i']}-{row['feature_6_j']}\"",
-    #                 'feature_7': f"\"{row['feature_7_i']}-{row['feature_7_j']}\"",
-    #                 'feature_8': f"\"{row['feature_8_i']}-{row['feature_8_j']}\"",
-    #                 'feature_9': f"\"{row['feature_9_i']}-{row['feature_9_j']}\"",
-    #                 'group': f"\"{row['group_i']}-{row['group_j']}\""
-    #             }
-    #             rows.append(wiersz)
-    # elif(nazwa_tabeli == "anxiety_depression" or nazwa_tabeli == "anxiety_user" or nazwa_tabeli == "depression_user"):
     noColumn = int(zestawienie.shape[1]/2)-2
     print(noColumn)
     for i in range(0, len(zestawienie)):
@@ -191,18 +166,6 @@ def regulyDecyzyjne(zestawienie, nazwa_tabeli):
             }
             wiersz['group'] = f"\"{row['group_i']}-{row['group_j']}\""
             rows.append(wiersz)
-    # elif(nazwa_tabeli == "anxiety_depression_user"):
-    #     for i in range(0, len(zestawienie)):
-    #         row = zestawienie.iloc[i]
-    #         if int(row['group_i']) != int(row['group_j']):
-    #             wiersz = {
-    #                 f"feature_{i}": f"\"{row[f'feature_{i}_i']}-{row[f'feature_{i}_j']}\""
-    #                 for i in range(32)
-    #             }
-    #             wiersz['group'] = f"\"{row['group_i']}-{row['group_j']}\""
-    #             rows.append(wiersz)
-    # elif(nazwa_tabeli == "anxiety_depression_pairs"):
-    #     pass
     reguly = pd.DataFrame(rows)
     return reguly
 
