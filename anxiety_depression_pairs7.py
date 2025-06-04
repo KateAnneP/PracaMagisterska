@@ -44,7 +44,7 @@ def main():
         ("f_0_a_partner", "symbolic"), #32
         ("f_1_a_partner", "symbolic"),
         ("f_2_a_partner", "symbolic"),
-        ("f_3_a_partner", "symbolic"),
+        ("f_3_a_partner", "symbolic"), #35
         ("f_4_a_partner", "symbolic"),
         ("f_5_a_partner", "symbolic"),
         ("f_6_a_partner", "symbolic"),
@@ -121,7 +121,8 @@ def main():
     # Nr grupowania: 1-Kmeans, 2-hierarchiczne, 3-DBSCAN
     reguly_test, reguly_caly = f.grupowanie(user_ad, nazwa_tabeli, attributes_info, 1)  # clusters też wcześniej dawało
     #f.stabilnosc(reguly_test, reguly_caly)
-    #grupy_hierarchiczne = f.grupowanie(user_ad, nazwa_tabeli, attributes_info, 2)
+    #reguly_test, reguly_caly = f.grupowanie(user_ad, nazwa_tabeli, attributes_info, 2)
+    #f.stabilnosc(reguly_test, reguly_caly)
     #grupyDBSCAN = f.grupowanie(user_ad, nazwa_tabeli, attributes_info, 3)
     #f.drzewoDecyzyjne(grupy_Kmeans)
 

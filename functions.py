@@ -53,19 +53,20 @@ def grupowanie(features, nazwa_tabeli, attributes_info, nr_grupowania):
     # f.wykresPCA(features, allClusters[0], nazwa_grupowania)
     # f.wykresPCA(features, allClusters[1], nazwa_grupowania)
 
+    drzewoDecyzyjne(allClusters[0], features_df)
 
-    clustersG = allClusters[0]
-    X_train, X_test, y_train, y_test = train_test_split(features, clustersG, train_size=0.5, shuffle=True, random_state=42 )
-
-    grupy_train = f.przypisanieGrup(X_train, y_train)
-    grupy_test = f.przypisanieGrup(X_test, y_test)
-    #grupy = f.przypisanieGrup(features, clustersG)
-    reguly_train = f.regulyDecyzyjne(grupy_train)
-    reguly_test = f.regulyDecyzyjne(grupy_test)
-    #reguly_caly = f.regulyDecyzyjne(grupy)
-
-    f.eksportDoRSES(attributes_info, reguly_train, nazwa_tabeli, f"wyniki/{nazwa_grupowania}_{nazwa_tabeli}_grupy{i}.tab")
-    #reguly_train.to_csv(f"wyniki/{nazwa_grupowania}_{nazwa_tabeli}_grupy{i}.csv", index=False) #zmienione na i + 2
+    # clustersG = allClusters[0]
+    # X_train, X_test, y_train, y_test = train_test_split(features, clustersG, train_size=0.5, shuffle=True, random_state=42 )
+    #
+    # grupy_train = f.przypisanieGrup(X_train, y_train)
+    # grupy_test = f.przypisanieGrup(X_test, y_test)
+    # #grupy = f.przypisanieGrup(features, clustersG)
+    # reguly_train = f.regulyDecyzyjne(grupy_train)
+    # reguly_test = f.regulyDecyzyjne(grupy_test)
+    # #reguly_caly = f.regulyDecyzyjne(grupy)
+    #
+    # f.eksportDoRSES(attributes_info, reguly_train, nazwa_tabeli, f"wyniki/{nazwa_grupowania}_{nazwa_tabeli}_grupy{i}.tab")
+    # #reguly_train.to_csv(f"wyniki/{nazwa_grupowania}_{nazwa_tabeli}_grupy{i}.csv", index=False) #zmienione na i + 2
 
     return reguly_test, reguly_train #clusters
 
@@ -119,7 +120,7 @@ def stabilnosc(reguly_test, reguly_train):
         prec = precyzja_train - precyzja
         stabilnosc_precyzja = 1 - abs(prec)
         stabilnosc_pokrycie = 1 - abs(pokrycie_train - pokrycie)
-        print(f"Stabilnosc(pokrycie) = {round(stabilnosc_pokrycie,3)},\nStabilność(precyzja) = {round(stabilnosc_precyzja,3)}\n")
+        print(f"Stabilnosc(pokrycie) = {round(stabilnosc_pokrycie,3)}\nStabilność(precyzja) = {round(stabilnosc_precyzja,3)}\n")
 
         klawisz = int(input("Podaj klawisz (1 - licz dalej, 0 - przerwij): "))
 
