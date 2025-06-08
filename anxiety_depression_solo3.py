@@ -39,14 +39,20 @@ def main():
     dane2 = dane2.drop(dane2.index[do_usuniecia2])
     dane2 = dane2.reset_index(drop=True)
 
+    mapping = {'0': '3', '1': '2', '2': '1', '3': '0'}
+
     # Przygotowanie atrybutów:
     dane_split = dane['attributes'].str.split('|', expand=True)
     dane_split.columns = [f'f_{i}_a' for i in range(dane_split.shape[1])]
     dane = pd.concat([dane_split, dane['email']], axis=1)
+    dane.iloc[:, 3] = dane.iloc[:, 3].map(mapping)
 
     dane2_split = dane2['attributes'].str.split('|', expand=True)
     dane2_split.columns = [f'f_{i}_d' for i in range(dane2_split.shape[1])]
     dane2 = pd.concat([dane2_split, dane2['email']], axis=1)
+    cols = [1, 2, 3, 6, 7]
+    for col in cols:
+        dane2.iloc[:, col] = dane2.iloc[:, col].map(mapping)
 
     all_features = (pd.merge(dane, dane2, on='email', how='inner')).drop(columns=['email'])
     indexes = []
@@ -61,10 +67,10 @@ def main():
 
     #################################################
     # Nr grupowania: 1-Kmeans, 2-hierarchiczne, 3-DBSCAN
-    reguly_test, reguly_caly = f.grupowanie(all_features, nazwa_tabeli, attributes_info, 1)  # clusters też wcześniej dawało
+    #reguly_test, reguly_caly = f.grupowanie(all_features, nazwa_tabeli, attributes_info, 1)  # clusters też wcześniej dawało
     #f.stabilnosc(reguly_test, reguly_caly)
-    #reguly_test, reguly_caly = f.grupowanie(all_features, nazwa_tabeli, attributes_info, 2)
-    #f.stabilnosc(reguly_test, reguly_caly)
+    reguly_test, reguly_caly = f.grupowanie(all_features, nazwa_tabeli, attributes_info, 2)
+    f.stabilnosc(reguly_test, reguly_caly)
     #grupyDBSCAN = f.grupowanie(all_features, nazwa_tabeli, attributes_info, 3)
     #f.drzewoDecyzyjne(grupy_Kmeans)
 

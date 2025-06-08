@@ -43,6 +43,10 @@ def main():
     dane_split = dane['attributes'].str.split('|', expand=True)
     dane_split.columns = [f'f_{i}' for i in range(dane_split.shape[1])]
     dane = pd.concat([dane_split, dane['date'], dane['email'], dane['gender']], axis=1)
+    mapping = {'0': '3', '1': '2', '2': '1', '3': '0'}
+    cols = [1, 2, 3, 6, 7]
+    for col in cols:
+        dane.iloc[:, col] = dane.iloc[:, col].map(mapping)
     features = dane.iloc[:, 0:10]  # cechy do grupowania, bez innych kolumn w tabeli
 
     dane_prepared = dane.drop(columns=['date', 'gender'])
@@ -62,9 +66,9 @@ def main():
 
     #################################################
     # Nr grupowania: 1-Kmeans, 2-hierarchiczne, 3-DBSCAN
-    reguly_test, reguly_caly = f.grupowanie(features_d, nazwa_tabeli, attributes_info, 1)  # clusters też wcześniej dawało
+    #reguly_test, reguly_caly = f.grupowanie(features_d, nazwa_tabeli, attributes_info, 1)  # clusters też wcześniej dawało
     #f.stabilnosc(reguly_test, reguly_caly)
-    #reguly_test, reguly_caly = f.grupowanie(features_d, nazwa_tabeli, attributes_info, 2)
+    reguly_test, reguly_caly = f.grupowanie(features_d, nazwa_tabeli, attributes_info, 2)
     #f.stabilnosc(reguly_test, reguly_caly)
     #grupyDBSCAN = f.grupowanie(features_d, nazwa_tabeli, attributes_info, 3)
     #f.drzewoDecyzyjne(grupy_Kmeans)
