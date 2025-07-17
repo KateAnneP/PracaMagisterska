@@ -7,10 +7,6 @@ from sklearn.tree import DecisionTreeClassifier, plot_tree
 from sklearn.model_selection import train_test_split
 import utils as f
 
-# Nie masz podkładki pod wzory na a i b w mierze Silhouette, dorób może rysunek do tego, jak wyglądają te grupy A i C
-# Dodaj parę fotek do algorytmów grupowania
-# !!! Popraw algorytm, z tymi warunkami dot. miar jakości, że większe od 0
-
 def grupowanie(features, nazwa_tabeli, attributes_info, nr_grupowania):
     #Nr grupowania: 1-Kmeans, 2-hierarchiczne, 3-DBSCAN
     if nr_grupowania == 1:
@@ -28,8 +24,7 @@ def grupowanie(features, nazwa_tabeli, attributes_info, nr_grupowania):
     features_scaled = MinMaxScaler().fit_transform(features_copy)
     features_df = pd.DataFrame(features_scaled, columns=features.columns, index=features.index)
 
-    # for i in range(2,3):
-    i = 3
+    i = 2
     if nr_grupowania == 1:
         clusters, centroids, inertia = f.grupowanieKmeans(i, features_df)
         allClusters.append(clusters)
@@ -45,12 +40,9 @@ def grupowanie(features, nazwa_tabeli, attributes_info, nr_grupowania):
         clustersDBSCAN = f.grupowanieDBSCAN(features_df, eps, min_samples)
         grupyDBSCAN = f.przypisanieGrup(features, clustersDBSCAN)
         f.wykresPCA(features, clustersDBSCAN, nazwa_grupowania)
-        reguly = f.regulyDecyzyjne(grupyDBSCAN)
+        reguly = f.stworzPrzejscia(grupyDBSCAN)
         #f.eksportDoRSES(attributes_info, reguly, nazwa_tabeli, f"DBSCAN_{nazwa_tabeli}.tab")
         return grupyDBSCAN
-
-    # f.wykresPCA(features, allClusters[0], nazwa_grupowania)
-    # f.wykresPCA(features, allClusters[1], nazwa_grupowania)
 
     #drzewoDecyzyjne(allClusters[0], features_df)
 
@@ -59,10 +51,9 @@ def grupowanie(features, nazwa_tabeli, attributes_info, nr_grupowania):
 
     grupy_train = f.przypisanieGrup(X_train, y_train)
     grupy_test = f.przypisanieGrup(X_test, y_test)
-    #grupy = f.przypisanieGrup(features, clustersG)
-    reguly_train = f.regulyDecyzyjne(grupy_train)
-    reguly_test = f.regulyDecyzyjne(grupy_test)
-    #reguly_caly = f.regulyDecyzyjne(grupy)
+
+    reguly_train = f.stworzPrzejscia(grupy_train)
+    reguly_test = f.stworzPrzejscia(grupy_test)
 
     f.eksportDoRSES(attributes_info, reguly_train, nazwa_tabeli, f"wyniki/{nazwa_grupowania}_{nazwa_tabeli}_grupy{i}.tab")
     #reguly_train.to_csv(f"wyniki/{nazwa_grupowania}_{nazwa_tabeli}_grupy{i}.csv", index=False) #zmienione na i + 2
@@ -122,79 +113,6 @@ def stabilnosc(reguly_test, reguly_train):
         print(f"Stabilnosc(pokrycie) = {round(stabilnosc_pokrycie,3)}\nStabilność(precyzja) = {round(stabilnosc_precyzja,3)}\n")
 
         klawisz = int(input("Podaj klawisz (1 - licz dalej, 0 - przerwij): "))
-
-
-
-#########################################
-
-def wykresy_i_miary(clusters, features, nr_grupowania, nazwa_grupowania):
-    # Tablice używane do wykresów
-    silhouettes = []
-    dbi = []
-    calinski_harabasz = []
-
-    # Słowniki używane do właściwej ilości grup
-    best_silhouette = {0: -1}
-    best_dbi = {0: 100}
-    best_ch = {0: -1}
-    best_indexes = []
-
-    clusters = []
-    centroids = []
-    inertia = []
-
-    miary = {}
-
-    #Wyszukiwanie najlepszej wartości miary Silhouette
-    current_silhouette = f.miaraSilhouette(features, clusters)
-    best_silhouette_value = list(best_silhouette.values())[0]
-    if current_silhouette >= best_silhouette_value and current_silhouette >= 0:
-        best_silhouette.clear()
-        best_silhouette[i] = current_silhouette
-
-    #Wyszukiwanie najlepszej wartości miary DBI
-    current_dbi = f.miaraDBI(features, clusters)
-    best_dbi_value = list(best_dbi.values())[0]
-    if current_dbi <= best_dbi_value:
-        best_dbi.clear()
-        best_dbi[i] = current_dbi
-
-    # Wyszukiwanie najlepszej wartości miary DBI
-    current_ch = f.miaraCalinskiHarabasz(features, clusters)
-    best_ch_value = list(best_ch.values())[0]
-    if current_ch >= best_ch_value:
-        best_ch.clear()
-        best_ch[i] = current_ch
-
-    silhouettes.append(current_silhouette)
-    dbi.append(current_dbi)
-    calinski_harabasz.append(current_ch)
-
-    #Wykresy miar jakości grupowania
-    if nr_grupowania == 1:
-        f.pokazWykresLokcia(inertia_Kmeans, 10)
-    f.pokazWykresSilhouette(silhouettes, 10)
-    f.pokazWykresDBI(dbi, 10)
-    f.pokazWykresCalinskiHarabasz(calinski_harabasz, 10)
-
-    miary['silhouette'] = silhouettes
-    miary['dbi'] = dbi
-    miary['calinski_harabasz'] = calinski_harabasz
-    import pandas as pd
-    df = pd.DataFrame({
-        'Liczba klastrów': range(2, 2 + len(miary['silhouette'])),
-        'Silhouette': miary['silhouette'],
-        'DBI': miary['dbi'],
-        'Calinski-Harabasz': miary['calinski_harabasz']
-    })
-    print(df.to_string(index=False))
-
-    best_indexes = [list(best_silhouette.keys())[0], list(best_dbi.keys())[0], list(best_ch.keys())[0]]
-    print(f"Na ile grup powinny być podzielone dane w grupowaniu {nazwa_grupowania} wg miar jakości grupowania: {best_indexes}")
-
-    #Dla każdej liczby grup, która jest najlepsza wg miar jakości wykonywane jest przypisanie grup do danych, a potem stworzenie reguł decyzyjnych i eksport do RSES
-    for i in dict.fromkeys(best_indexes):
-        pass
 
 
 #########################################
@@ -275,55 +193,60 @@ def grupowanie_robocze(features, nazwa_tabeli, attributes_info, nr_grupowania):
 
     miary = {}
 
-    for i in range(2,6):
+    import pandas as pd
+    features_copy = features.copy()
+    features_scaled = MinMaxScaler().fit_transform(features_copy)
+    features_df = pd.DataFrame(features_scaled, columns=features.columns, index=features.index)
+
+    for i in range(2,10):
 
         if nr_grupowania == 1:
-            clusters, centroids, inertia = f.grupowanieKmeans(i, features)
+            clusters, centroids, inertia = f.grupowanieKmeans(i, features_df)
             allClusters.append(clusters)
             centroids_Kmeans.append(centroids)
             inertia_Kmeans.append(inertia)
         elif nr_grupowania == 2:
-            clusters = f.grupowanieHierarchiczne(i, features, "complete", "euclidean")
+            clusters = f.grupowanieHierarchiczne(i, features_df, "complete", "euclidean")
             allClusters.append(clusters)
         elif nr_grupowania == 3:
-            min_samples = features.shape[1] * 2
-            f.wykresNajblizszychOdleglosci(features, min_samples)
+            min_samples = features_df.shape[1] * 2
+            f.wykresNajblizszychOdleglosci(features_df, min_samples)
             eps = 70.0
-            clustersDBSCAN = f.grupowanieDBSCAN(features, eps, min_samples)
+            clustersDBSCAN = f.grupowanieDBSCAN(features_df, eps, min_samples)
             grupyDBSCAN = f.przypisanieGrup(features, clustersDBSCAN)
             f.wykresPCA(features, clustersDBSCAN, nazwa_grupowania)
-            reguly = f.regulyDecyzyjne(grupyDBSCAN)
+            reguly = f.stworzPrzejscia(grupyDBSCAN)
             #f.eksportDoRSES(attributes_info, reguly, nazwa_tabeli, f"DBSCAN_{nazwa_tabeli}.tab")
             return grupyDBSCAN
 
         #Wyszukiwanie najlepszej wartości miary Silhouette
-        current_silhouette = f.miaraSilhouette(features, clusters)
-        best_silhouette_value = list(best_silhouette.values())[0]
-        if current_silhouette >= best_silhouette_value and current_silhouette >= 0:
-            best_silhouette.clear()
-            best_silhouette[i] = current_silhouette
+        current_silhouette = f.miaraSilhouette(features_df, clusters)
+        # best_silhouette_value = list(best_silhouette.values())[0]
+        # if current_silhouette >= best_silhouette_value and current_silhouette >= 0:
+        #     best_silhouette.clear()
+        #     best_silhouette[i] = current_silhouette
 
         #Wyszukiwanie najlepszej wartości miary DBI
-        current_dbi = f.miaraDBI(features, clusters)
-        best_dbi_value = list(best_dbi.values())[0]
-        if current_dbi <= best_dbi_value:
-            best_dbi.clear()
-            best_dbi[i] = current_dbi
+        current_dbi = f.miaraDBI(features_df, clusters)
+        # best_dbi_value = list(best_dbi.values())[0]
+        # if current_dbi <= best_dbi_value:
+        #     best_dbi.clear()
+        #     best_dbi[i] = current_dbi
 
         # Wyszukiwanie najlepszej wartości miary DBI
-        current_ch = f.miaraCalinskiHarabasz(features, clusters)
-        best_ch_value = list(best_ch.values())[0]
-        if current_ch >= best_ch_value:
-            best_ch.clear()
-            best_ch[i] = current_ch
+        current_ch = f.miaraCalinskiHarabasz(features_df, clusters)
+        # best_ch_value = list(best_ch.values())[0]
+        # if current_ch >= best_ch_value:
+        #     best_ch.clear()
+        #     best_ch[i] = current_ch
 
         silhouettes.append(current_silhouette)
         dbi.append(current_dbi)
         calinski_harabasz.append(current_ch)
 
     #Wykresy miar jakości grupowania
-    # if nr_grupowania == 1:
-    #     f.pokazWykresLokcia(inertia_Kmeans, 10)
+    if nr_grupowania == 1:
+        f.pokazWykresLokcia(inertia_Kmeans, 10)
     # f.pokazWykresSilhouette(silhouettes, 10)
     # f.pokazWykresDBI(dbi, 10)
     # f.pokazWykresCalinskiHarabasz(calinski_harabasz, 10)

@@ -64,7 +64,7 @@ def grupowanie1_Kmeans(features, nazwa_tabeli, attributes_info):
     for i in dict.fromkeys(best_indexes_Kmeans):
         clustersG = clusters_Kmeans[i]
         grupyKmeans = f.przypisanieGrup(features, clustersG)
-        reguly = f.regulyDecyzyjne(grupyKmeans)
+        reguly = f.stworzPrzejscia(grupyKmeans)
         f.eksportDoRSES(attributes_info, reguly, nazwa_tabeli, f"Kmeans_{nazwa_tabeli}_grupy{i}.tab")
 
 #################################################
@@ -126,7 +126,7 @@ def grupowanie2_hierarchiczne(features, nazwa_tabeli, attributes_info):
     for i in dict.fromkeys(best_indexes_hierarchiczne):
         clustersG = clusters_hierarchiczne[i]
         grupyHierarchiczne = f.przypisanieGrup(features, clustersG)
-        reguly = f.regulyDecyzyjne(grupyHierarchiczne)
+        reguly = f.stworzPrzejscia(grupyHierarchiczne)
         f.eksportDoRSES(attributes_info, reguly, nazwa_tabeli, f"hierarchiczne_{nazwa_tabeli}_grupy{i}.tab")
 
 #################################################
@@ -139,7 +139,7 @@ def grupowanie3_DBSCAN(features, nazwa_tabeli, attributes_info):
     eps = 5.0
     clustersDBSCAN = f.grupowanieDBSCAN(features, eps, min_samples)
     grupyDBSCAN = f.przypisanieGrup(features, clustersDBSCAN)
-    reguly = f.regulyDecyzyjne(grupyDBSCAN)
+    reguly = f.stworzPrzejscia(grupyDBSCAN)
     f.eksportDoRSES(attributes_info, reguly, nazwa_tabeli, f"DBSCAN_{nazwa_tabeli}.tab")
 
 ##################################################

@@ -80,12 +80,16 @@ def main():
 
     #################################################
     # Nr grupowania: 1-Kmeans, 2-hierarchiczne, 3-DBSCAN
-    #reguly_test, reguly_caly = f.grupowanie(user_ad, nazwa_tabeli, attributes_info, 1)  # clusters też wcześniej dawało
-    #f.stabilnosc(reguly_test, reguly_caly)
+    #f.grupowanie_robocze(user_ad, nazwa_tabeli, attributes_info, 1)
+    #f.grupowanie_robocze(user_ad, nazwa_tabeli, attributes_info, 2)
+
+    reguly_test, reguly_caly = f.grupowanie(user_ad, nazwa_tabeli, attributes_info, 1)  # clusters też wcześniej dawało
+    f.stabilnosc(reguly_test, reguly_caly)
+
     reguly_test, reguly_caly = f.grupowanie(user_ad, nazwa_tabeli, attributes_info, 2)
-    #f.stabilnosc(reguly_test, reguly_caly)
-    #grupyDBSCAN = f.grupowanie(user_ad, nazwa_tabeli, attributes_info, 3)
-    #f.drzewoDecyzyjne(grupy_Kmeans)
+    f.stabilnosc(reguly_test, reguly_caly)
+
+    grupyDBSCAN = f.grupowanie(user_ad, nazwa_tabeli, attributes_info, 3)
 
 if __name__ == "__main__":
     main()

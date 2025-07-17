@@ -153,7 +153,7 @@ def przypisanieGrup(dane, clusters):
     zestawienie = pd.DataFrame(wiersze)
     return zestawienie
 
-def regulyDecyzyjne(zestawienie):
+def stworzPrzejscia(zestawienie):
     rows = []
     noColumn = int(zestawienie.shape[1]/2)-2
     print(noColumn)
