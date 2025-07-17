@@ -7,7 +7,7 @@ from pandas import CategoricalDtype
 
 current_year = datetime.now().year  # Bieżący rok
 
-users = pd.read_csv('dane/ausers.csv', delimiter=';')
+users = pd.read_csv('excluded/dane/ausers.csv', delimiter=';')
 prepared = users.copy()
 
 # ------------------------------------------------------------------------------

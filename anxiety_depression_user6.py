@@ -4,8 +4,8 @@ import functions as f
 
 def main():
     # Dane
-    dane = pd.read_csv('dane/aanxiety.csv', delimiter=';')
-    dane2 = pd.read_csv('dane/adepression.csv', delimiter=';')
+    dane = pd.read_csv('excluded/dane/aanxiety.csv', delimiter=';')
+    dane2 = pd.read_csv('excluded/dane/adepression.csv', delimiter=';')
     nazwa_tabeli = "anxiety_depression_user"
     attributes_info = [
         ("f_0_a", "symbolic"),

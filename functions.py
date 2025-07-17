@@ -55,7 +55,8 @@ def grupowanie(features, nazwa_tabeli, attributes_info, nr_grupowania):
     reguly_train = f.stworzPrzejscia(grupy_train)
     reguly_test = f.stworzPrzejscia(grupy_test)
 
-    f.eksportDoRSES(attributes_info, reguly_train, nazwa_tabeli, f"wyniki/{nazwa_grupowania}_{nazwa_tabeli}_grupy{i}.tab")
+    f.eksportDoRSES(attributes_info, reguly_train, nazwa_tabeli,
+                    f"excluded/wyniki/{nazwa_grupowania}_{nazwa_tabeli}_grupy{i}.tab")
     #reguly_train.to_csv(f"wyniki/{nazwa_grupowania}_{nazwa_tabeli}_grupy{i}.csv", index=False) #zmienione na i + 2
 
     return reguly_test, reguly_train #clusters

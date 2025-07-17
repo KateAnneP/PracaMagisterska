@@ -4,7 +4,7 @@ import users_dane_prepared as dane_user
 
 def main():
     # Dane
-    dane = pd.read_csv('dane/adepression.csv', delimiter=';')
+    dane = pd.read_csv('excluded/dane/adepression.csv', delimiter=';')
     nazwa_tabeli = "depression_user"
     attributes_info = [
         ("f_0_d", "symbolic"),

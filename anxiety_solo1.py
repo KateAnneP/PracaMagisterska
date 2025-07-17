@@ -3,7 +3,7 @@ import functions as f
 
 def main():
     # Dane
-    dane = pd.read_csv('dane/aanxiety.csv', delimiter=';')
+    dane = pd.read_csv('excluded/dane/aanxiety.csv', delimiter=';')
     nazwa_tabeli = "anxiety"
     attributes_info = [
         ("f_0_a", "symbolic"),

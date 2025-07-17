@@ -4,8 +4,8 @@ import users_dane_prepared
 
 def main():
     # Dane
-    dane = pd.read_csv('dane/aanxiety.csv', delimiter=';')
-    dane2 = pd.read_csv('dane/adepression.csv', delimiter=';')
+    dane = pd.read_csv('excluded/dane/aanxiety.csv', delimiter=';')
+    dane2 = pd.read_csv('excluded/dane/adepression.csv', delimiter=';')
 
     nazwa_tabeli = "anxiety_depression_pairs"
     attributes_info = [
